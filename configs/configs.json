@@ -1,0 +1,7 @@
+{
+    "log_level":2,
+    "local_ip":"127.0.0.1",
+    "policy_script_receive_port":7083,
+    "data_server_ip":"127.0.0.1",
+    "data_server_port":7084    
+}
