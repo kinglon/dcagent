@@ -207,6 +207,7 @@
     <ClInclude Include="SchedulePolicy.h" />
     <ClInclude Include="SettingManager.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="Utility\DumpUtil.h" />
     <ClInclude Include="Utility\IcrCriticalSection.h" />
     <ClInclude Include="Utility\ImCharset.h" />
     <ClInclude Include="Utility\ImPath.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="PerfData.cpp" />
     <ClCompile Include="RecvDataThread.cpp" />
     <ClCompile Include="SettingManager.cpp" />
+    <ClCompile Include="Utility\DumpUtil.cpp" />
     <ClCompile Include="Utility\IcrCriticalSection.cpp" />
     <ClCompile Include="Utility\ImCharset.cpp" />
     <ClCompile Include="Utility\ImPath.cpp" />

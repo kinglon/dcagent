@@ -19,18 +19,12 @@ BOOL CRecvDataThread::InitInstance()
 {
 	LOG_INFO(L"the thread of receiving data begins to run");
 
+    AfxSocketInit();
+
     // Create UDP socket
-    if (!m_udpSocket.Create(0, SOCK_DGRAM))
+    if (!m_udpSocket.Create(m_nPort, SOCK_DGRAM))
     {
         LOG_ERROR(L"failed to create the udp socket, error is %d", GetLastError());
-        return FALSE;
-    }
-
-    // Bind the socket to a local port
-    if (!m_udpSocket.Bind(m_nPort))
-    {
-        LOG_ERROR(L"failed to bind the port %d , error is %d", m_nPort, GetLastError());
-        m_udpSocket.Close();
         return FALSE;
     }
 

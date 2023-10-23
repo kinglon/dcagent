@@ -56,10 +56,14 @@ void LogBuffer::LogTimeInfoAndLevel(ELogLevel logLevel)
     {
         strLevel = L"Error";
     }
+	else if (logLevel < ELogLevel::LOG_LEVEL_INFO)
+	{
+		strLevel = L"Debug";
+	}
 
 	SYSTEMTIME st;
 	GetLocalTime(&st);
-    int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"<<%02d:%02d:%02d#%s>>\n", st.wHour, st.wMinute, st.wSecond, strLevel.c_str());
+    int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"<<%02d:%02d:%02d#%s>>", st.wHour, st.wMinute, st.wSecond, strLevel.c_str());
 	if (nWtiteDone > 0)
     {
 		m_pBuffWritten += nWtiteDone;

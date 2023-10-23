@@ -52,6 +52,8 @@ private:
 	// 标识采集组是否正在采集
 	std::map<std::string, bool> m_mapGroupName2IsRun;
 
+	std::map<std::string, time_t> m_mapGroupName2TriggerTime;
+
 	CAsyncSocket m_perfSendSock;
 
 protected:

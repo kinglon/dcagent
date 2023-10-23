@@ -7,6 +7,8 @@
 #include "dcagent.h"
 #include "DcAgentDlg.h"
 #include "Utility/LogUtil.h"
+#include "Utility/DumpUtil.h"
+#include "Utility/ImPath.h"
 #include "SettingManager.h"
 
 #ifdef _DEBUG
@@ -46,19 +48,25 @@ BOOL CDcAgentApp::InitInstance()
 
 	// 激活“Windows Native”视觉管理器，以便在 MFC 控件中启用主题
 	CMFCVisualManager::SetDefaultManager(RUNTIME_CLASS(CMFCVisualManagerWindows));
-
-	// 标准初始化
-	// 如果未使用这些功能并希望减小
-	// 最终可执行文件的大小，则应移除下列
-	// 不需要的特定初始化例程
-	// 更改用于存储设置的注册表项
-	// TODO: 应适当修改该字符串，
-	// 例如修改为公司或组织名
-	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));
+	
+	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));	
 
 	g_dllLog = CLogUtil::GetLog(L"main");
+
+	//初始化崩溃转储机制
+	CDumpUtil::SetDumpFilePath(CImPath::GetDumpPath().c_str());
+	CDumpUtil::Enable(true);
+
 	int nLogLevel = CSettingManager::GetInstance()->GetLogLevel();
-	g_dllLog->SetLogLevel((ELogLevel)nLogLevel);
+	g_dllLog->SetLogLevel((ELogLevel)nLogLevel);	
+
+	// Initialize Winsock
+	WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+	{
+		LOG_ERROR(L"failed to initialize Winsock, error is %d", GetLastError());
+		return FALSE;
+	}
 
 	CDcAgentDlg dlg;
 	m_pMainWnd = &dlg;
@@ -78,6 +86,9 @@ BOOL CDcAgentApp::InitInstance()
 		TRACE(traceAppMsg, 0, "警告: 对话框创建失败，应用程序将意外终止。\n");
 		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
 	}
+
+	// Cleanup and shutdown Winsock
+	WSACleanup();
 
 	// 删除上面创建的 shell 管理器。
 	if (pShellManager != nullptr)

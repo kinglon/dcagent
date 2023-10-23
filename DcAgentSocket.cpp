@@ -54,7 +54,7 @@ void CDcAgentSocket::ParseData(const char* pData, int nDataLength)
     if (parsingSuccessful)
     {
         if (root.isMember("group_name") && root.isMember("script_name") && root.isMember("is_true")\
-            && root.isMember("crontab"))
+            && root["is_true"].isBool() && root.isMember("crontab"))
         {
             CSchedulePolicy schedulePolicy;
             schedulePolicy.m_strGroupName = root["group_name"].asString().c_str();
@@ -77,6 +77,6 @@ void CDcAgentSocket::ParseData(const char* pData, int nDataLength)
     }
     else
     {
-        LOG_ERROR(L"failed to parse json, error: %s", errors.c_str());
+        LOG_ERROR(L"failed to parse the data");
     }
 }

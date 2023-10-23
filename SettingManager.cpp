@@ -118,7 +118,7 @@ void CSettingManager::LoadSchedulePolicyConfigure()
                 schedulePolicy.m_strGroupName = childValue["group_name"].asString();
                 schedulePolicy.m_strScriptName = childValue["script_name"].asString();
                 schedulePolicy.m_strCronTab = childValue["crontab"].asString();
-                schedulePolicy.m_bEnable = childValue["is_true"].asInt();
+                schedulePolicy.m_bEnable = childValue["is_true"].asBool();
                 m_schedulePolicies.push_back(schedulePolicy);
             }
         }

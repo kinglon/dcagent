@@ -104,7 +104,7 @@ std::wstring CImPath::GetConfPath()
         return strConfPath;
     }
 
-    strConfPath = GetSoftInstallPath() + L"configs\\";
+    strConfPath = GetSoftInstallPath() + L"Configs\\";
     if (!PathFileExists(strConfPath.c_str()))
     {
         CreateDirectory(strConfPath.c_str(), NULL);

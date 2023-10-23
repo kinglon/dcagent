@@ -75,6 +75,9 @@
     <ClInclude Include="PerfData.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Utility\DumpUtil.h">
+      <Filter>头文件\Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dcagent.cpp">
@@ -115,6 +118,9 @@
     </ClCompile>
     <ClCompile Include="PerfData.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Utility\DumpUtil.cpp">
+      <Filter>源文件\Utility</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

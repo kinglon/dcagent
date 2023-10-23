@@ -11,7 +11,7 @@
 #include "PerfData.h"
 #include <fstream>
 
-const std::wstring SCRIPT_FOLDER_NAME = L"script";
+const std::wstring SCRIPT_FOLDER_NAME = L"Script";
 
 #define WM_SCRIPT_OUTPUT (WM_USER+100)
 #define WM_SCHEDULE_POLICY_CHANGE (WM_USER+101)
@@ -37,8 +37,19 @@ UINT CCollectDataThread::NextElapse(const CSchedulePolicy& schedulePolicy)
     {
         auto cron = cron::make_cron(schedulePolicy.m_strCronTab);
         std::time_t now = std::time(0);
+        auto it = m_mapGroupName2TriggerTime.find(schedulePolicy.m_strGroupName);
+        if (it != m_mapGroupName2TriggerTime.end())
+        {
+            now = it->second;
+        }
         std::time_t next = cron::cron_next(cron, now);
         uElapse = (UINT)(next - now);
+        if (uElapse < 15)
+        {
+            // 避免频率太快
+            uElapse += 15;
+        }
+        m_mapGroupName2TriggerTime[schedulePolicy.m_strGroupName] = next;
     }
     catch (cron::bad_cronexpr const&)
     {
@@ -77,7 +88,11 @@ UINT_PTR CCollectDataThread::SetScheduleTimer(const CSchedulePolicy& schedulePol
 
 BOOL CCollectDataThread::InitInstance()
 {	
-    if (!m_perfSendSock.Create())
+    LOG_INFO(L"the thread of collecting data begins to run");
+
+    AfxSocketInit();
+
+    if (!m_perfSendSock.Create(0, SOCK_DGRAM))
     {
         LOG_ERROR(L"failed to create the sending socket, error is %d", m_perfSendSock.GetLastError());
         return FALSE;
@@ -219,9 +234,9 @@ void CCollectDataThread::RunScript(std::string strGroupName, std::string strScri
         LOG_INFO(L"the %s is collecting.", CImCharset::AnsiToUnicode(strGroupName.c_str()).c_str());
         return;
     }
-
-    LOG_DEBUG(L"run script : %s", strScriptFileName.c_str());
+    
     std::wstring strScriptPath = GetScriptFilePath(strScriptFileName);
+    LOG_DEBUG(L"run script : %s", strScriptPath.c_str());
     DWORD attributes = GetFileAttributes(strScriptPath.c_str());
     if (attributes == INVALID_FILE_ATTRIBUTES)
     {
@@ -250,7 +265,8 @@ void CCollectDataThread::RunScript(std::string strGroupName, std::string strScri
     ZeroMemory(&si, sizeof(si));
     ZeroMemory(&pi, sizeof(pi));
     si.cb = sizeof(si);
-    si.dwFlags = STARTF_USESTDHANDLES;
+    si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;;
+    si.wShowWindow = SW_HIDE;
     si.hStdOutput = hWritePipe;
     si.hStdError = hWritePipe;
 
@@ -288,7 +304,7 @@ void CCollectDataThread::RecvScriptOutput(const std::string& strGroupName, const
     std::tuple<std::string, std::string>* lpParam = new std::tuple<std::string, std::string>();
     std::get<0>(*lpParam) = strGroupName;
     std::get<1>(*lpParam) = strOutput;
-    PostMessage(NULL, WM_SCRIPT_OUTPUT, 0, (LPARAM)lpParam);
+    this->PostThreadMessage(WM_SCRIPT_OUTPUT, 0, (LPARAM)lpParam);
 }
 
 void CCollectDataThread::OnScriptOutput(const std::string& strGroupName, const std::string& strOutput)
@@ -307,7 +323,7 @@ void CCollectDataThread::UpdateSchedulePolicy(const CSchedulePolicy& schedulePol
 {
     CSchedulePolicy* lpSchedulePolicy = new CSchedulePolicy();
     *lpSchedulePolicy = schedulePolicy;
-    PostMessage(NULL, WM_SCHEDULE_POLICY_CHANGE, 0, (LPARAM)lpSchedulePolicy);
+    this->PostThreadMessage(WM_SCHEDULE_POLICY_CHANGE, 0, (LPARAM)lpSchedulePolicy);
 }
 
 void CCollectDataThread::UpdateScriptFile(const CScriptFile& scriptFile)
@@ -342,6 +358,7 @@ void CCollectDataThread::OnSchedulePolicyChange(const CSchedulePolicy& scheduleP
             break;
         }
     }
+    m_mapGroupName2TriggerTime.erase(schedulePolicy.m_strGroupName);
 
     // 设置新的定时器
     UINT_PTR nTimerId = SetScheduleTimer(schedulePolicy);
