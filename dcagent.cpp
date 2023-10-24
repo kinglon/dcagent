@@ -51,6 +51,15 @@ BOOL CDcAgentApp::InitInstance()
 	
 	SetRegistryKey(_T("应用程序向导生成的本地应用程序"));	
 
+	// 单实例
+	const wchar_t* mutexName = L"{70BD9620-A373-4464-9BF9-CBF2D662359F}";
+	HANDLE mutexHandle = CreateMutexW(nullptr, TRUE, mutexName);
+	if (mutexHandle == nullptr || GetLastError() == ERROR_ALREADY_EXISTS)
+	{
+		AfxMessageBox(L"程序已经在运行");
+		return FALSE;
+	}
+
 	g_dllLog = CLogUtil::GetLog(L"main");
 
 	//初始化崩溃转储机制
@@ -86,6 +95,8 @@ BOOL CDcAgentApp::InitInstance()
 		TRACE(traceAppMsg, 0, "警告: 对话框创建失败，应用程序将意外终止。\n");
 		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
 	}
+
+	CloseHandle(mutexHandle);
 
 	// Cleanup and shutdown Winsock
 	WSACleanup();

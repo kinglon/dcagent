@@ -76,12 +76,15 @@ long __stdcall CDumpUtil::UnhandledExceptionFilter(struct _EXCEPTION_POINTERS* p
 
     MINIDUMPWRITEDUMP pMiniDumpWriteDump = (MINIDUMPWRITEDUMP)::GetProcAddress(hDbghelpDll, "MiniDumpWriteDump");
     if (pMiniDumpWriteDump)
-    {
-        LOG_ERROR(L"failed to get MiniDumpWriteDump function address");
+    {        
         if (!pMiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpNormal, &exceptionInfo, nullptr, nullptr))
         {
             LOG_ERROR(L"failed to write mini dump to file, error=%d", GetLastError());
         }
+    }
+    else
+    {
+        LOG_ERROR(L"failed to get MiniDumpWriteDump function address");
     }
     
     LOG_DEBUG(L"exit process because of exception");
