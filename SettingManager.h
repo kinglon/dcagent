@@ -14,7 +14,9 @@ public:
 public:
 	int GetLogLevel() { return m_nLogLevel; }
 	
-	UINT GetRecvPort() { return m_nRecvPort; }
+	UINT GetPolicyRecvPort() { return m_nPolicyRecvPort; }
+
+	UINT GetScriptRecvPort() { return m_nScriptRecvPort; }
 
 	std::string GetLocalIpAddress() { return m_strLocalIPAddress; }
 
@@ -35,10 +37,14 @@ private:
 
 	void SaveSchedulePolicyConfigure();
 
+	std::vector<std::string> GetLocalIPList();
+
 private:
 	int m_nLogLevel = 2; // debug 1, info 2, error 3, ...
 
-	UINT m_nRecvPort = 7083;
+	UINT m_nPolicyRecvPort = 6081;
+
+	UINT m_nScriptRecvPort = 6082;
 
 	std::string m_strLocalIPAddress = "127.0.0.1";
 

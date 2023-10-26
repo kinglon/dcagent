@@ -4,6 +4,7 @@
 #include "pch.h"
 #include "dcagent.h"
 #include "RecvDataThread.h"
+#include "SettingManager.h"
 
 IMPLEMENT_DYNCREATE(CRecvDataThread, CWinThread)
 
@@ -22,9 +23,17 @@ BOOL CRecvDataThread::InitInstance()
     AfxSocketInit();
 
     // Create UDP socket
-    if (!m_udpSocket.Create(m_nPort, SOCK_DGRAM))
+    UINT nPolicyPort = CSettingManager::GetInstance()->GetPolicyRecvPort();
+    if (!m_policySocket.Create(nPolicyPort, SOCK_DGRAM))
     {
-        LOG_ERROR(L"failed to create the udp socket, error is %d", GetLastError());
+        LOG_ERROR(L"failed to create the policy socket (%d), error is %d", nPolicyPort, GetLastError());
+        return FALSE;
+    }
+
+    UINT nScriptPort = CSettingManager::GetInstance()->GetScriptRecvPort();
+    if (!m_scriptSocket.Create(nScriptPort, SOCK_DGRAM))
+    {
+        LOG_ERROR(L"failed to create the script socket (%d), error is %d", nScriptPort, GetLastError());
         return FALSE;
     }
 
@@ -33,7 +42,7 @@ BOOL CRecvDataThread::InitInstance()
 
 int CRecvDataThread::ExitInstance()
 {
-    m_udpSocket.Close();
+    m_policySocket.Close();
 	return CWinThread::ExitInstance();
 }
 

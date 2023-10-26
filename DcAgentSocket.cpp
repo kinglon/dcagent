@@ -60,7 +60,7 @@ void CDcAgentSocket::ParseData(const char* pData, int nDataLength)
             schedulePolicy.m_strGroupName = root["group_name"].asString().c_str();
             schedulePolicy.m_strScriptName = root["script_name"].asString().c_str();
             schedulePolicy.m_bEnable = root["is_true"].asBool();
-            schedulePolicy.m_strCronTab = root["crontab"].asString().c_str();
+            schedulePolicy.m_strCronTab = std::string("0 ") + root["crontab"].asString().c_str(); // 下发时没有秒
             CCollectDataThread::GetInstance()->UpdateSchedulePolicy(schedulePolicy);
         }
         else if (root.isMember("script_name") && root.isMember("script_data"))

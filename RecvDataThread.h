@@ -14,13 +14,10 @@ public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
 
-public:
-	void SetRecvPort(UINT nPort) { m_nPort = nPort;  }
-
 private:
-	CDcAgentSocket m_udpSocket;
+	CDcAgentSocket m_policySocket;	
 
-	UINT m_nPort = 7081;
+	CDcAgentSocket m_scriptSocket;	
 
 protected:
 	DECLARE_MESSAGE_MAP()

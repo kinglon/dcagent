@@ -2,7 +2,12 @@
 #include "SettingManager.h"
 #include <fstream>
 #include <json/json.h>
+#include <iphlpapi.h>
+#include <ws2tcpip.h>
 #include "Utility/ImPath.h"
+
+#pragma comment(lib, "iphlpapi.lib")
+#pragma comment(lib, "ws2_32.lib")
 
 #define SCHEDULE_POLICY_CONF_FILE_NAME L"schedule_policy.json"
 
@@ -54,14 +59,23 @@ void CSettingManager::LoadBasicConfigure()
         m_nLogLevel = root["log_level"].asInt();
     }
 
-    if (root.isMember("local_ip"))
+    std::vector<std::string> localIPs;
+    if (root.isMember("local_ip") && root["local_ip"].isArray())
     {
-        m_strLocalIPAddress = root["local_ip"].asString();
+        for (const Json::Value& value : root["local_ip"]) 
+        {
+            localIPs.push_back(value.asString());
+        }
     }
 
-    if (root.isMember("policy_script_receive_port"))
+    if (root.isMember("policy_receive_port"))
     {
-        m_nRecvPort = root["policy_script_receive_port"].asInt();
+        m_nPolicyRecvPort = root["policy_receive_port"].asInt();
+    }
+
+    if (root.isMember("script_receive_port"))
+    {
+        m_nScriptRecvPort = root["script_receive_port"].asInt();
     }
 
     if (root.isMember("data_server_ip"))
@@ -72,6 +86,25 @@ void CSettingManager::LoadBasicConfigure()
     if (root.isMember("data_server_port"))
     {
         m_nSendPort = root["data_server_port"].asInt();
+    }
+
+    bool bFound = false;
+    std::vector<std::string> localNicIPs = GetLocalIPList();
+    for (auto& ip : localNicIPs)
+    {
+        for (auto& ip2 : localIPs)
+        {
+            if (ip == ip2)
+            {
+                m_strLocalIPAddress = ip;
+                bFound = true;
+                break;
+            }
+        }
+    }
+    if (!bFound)
+    {
+        LOG_ERROR(L"the configured local ip is not existed");
     }
 }
 
@@ -172,4 +205,49 @@ void CSettingManager::UpdateSchedulePolicies(const CSchedulePolicy& schedulePoli
     }
 
     SaveSchedulePolicyConfigure();
+}
+
+std::vector<std::string> CSettingManager::GetLocalIPList()
+{
+    std::vector<std::string> ipList;
+    ULONG bufferSize = 0;
+    DWORD result = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, nullptr, &bufferSize);
+    if (result != ERROR_BUFFER_OVERFLOW)
+    {
+        LOG_ERROR(L"failed to call GetAdaptersAddresses, error is %d", result);
+        return ipList;
+    }
+
+    IP_ADAPTER_ADDRESSES* adapterAddresses = reinterpret_cast<IP_ADAPTER_ADDRESSES*>(new char[bufferSize]);
+    result = GetAdaptersAddresses(AF_UNSPEC, GAA_FLAG_INCLUDE_PREFIX, nullptr, adapterAddresses, &bufferSize);
+    if (result != ERROR_SUCCESS)
+    {
+        LOG_ERROR(L"failed to call GetAdaptersAddresses, error is %d", result);
+        delete[] adapterAddresses;
+        return ipList;
+    }
+
+    IP_ADAPTER_ADDRESSES* adapter = adapterAddresses;
+    while (adapter != nullptr)
+    {
+        IP_ADAPTER_UNICAST_ADDRESS* unicastAddress = adapter->FirstUnicastAddress;
+        while (unicastAddress != nullptr)
+        {
+            char ipAddress[INET6_ADDRSTRLEN];
+            DWORD ipAddressLength = sizeof(ipAddress);
+            sockaddr* address = unicastAddress->Address.lpSockaddr;
+            if (address->sa_family == AF_INET)
+            {
+                sockaddr_in* ipv4Address = reinterpret_cast<sockaddr_in*>(address);
+                inet_ntop(AF_INET, &(ipv4Address->sin_addr), ipAddress, ipAddressLength);
+                ipList.push_back(ipAddress);
+            }   
+            unicastAddress = unicastAddress->Next;
+        }
+
+        adapter = adapter->Next;
+    }
+
+    delete[] adapterAddresses;
+    return ipList;
 }

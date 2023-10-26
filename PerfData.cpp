@@ -4,7 +4,7 @@
 
 std::string CPerfData::ToJsonString()
 {
-	std::string strProKey = m_strIpv4Info + m_strIndexName + std::to_string(std::time(0));
+	std::string strProKey = m_strIpv4Info + m_strIndexName + std::to_string(time(0));
 	Json::Value root;
 	root["index_name"] = m_strIndexName;
 	root["ipv4info"] = m_strIpv4Info;

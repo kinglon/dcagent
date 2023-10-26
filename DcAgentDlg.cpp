@@ -104,8 +104,7 @@ BOOL CDcAgentDlg::OnInitDialog()
 
 	SetAutoRun();
 
-	CRecvDataThread* recvDataThread = new CRecvDataThread();
-	recvDataThread->SetRecvPort(CSettingManager::GetInstance()->GetRecvPort());
+	CRecvDataThread* recvDataThread = new CRecvDataThread();	
 	recvDataThread->m_bAutoDelete = true;
 	recvDataThread->CreateThread();
 
