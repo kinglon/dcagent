@@ -238,9 +238,9 @@ std::vector<std::string> CSettingManager::GetLocalIPList()
             sockaddr* address = unicastAddress->Address.lpSockaddr;
             if (address->sa_family == AF_INET)
             {
-                sockaddr_in* ipv4Address = reinterpret_cast<sockaddr_in*>(address);
-                inet_ntop(AF_INET, &(ipv4Address->sin_addr), ipAddress, ipAddressLength);
-                ipList.push_back(ipAddress);
+                sockaddr_in* ipv4Address = reinterpret_cast<sockaddr_in*>(address);                
+                const char* result = inet_ntoa(ipv4Address->sin_addr);                
+                ipList.push_back(result);
             }   
             unicastAddress = unicastAddress->Next;
         }
