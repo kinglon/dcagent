@@ -104,6 +104,8 @@ BOOL CDcAgentDlg::OnInitDialog()
 
 	SetAutoRun();
 
+	AfxRegisterWndClass(0);
+
 	CRecvDataThread* recvDataThread = new CRecvDataThread();	
 	recvDataThread->m_bAutoDelete = true;
 	recvDataThread->CreateThread();

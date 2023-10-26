@@ -4,6 +4,7 @@
 
 #include "pch.h"
 #include "framework.h"
+#include <afxsock.h>
 #include "dcagent.h"
 #include "DcAgentDlg.h"
 #include "Utility/LogUtil.h"
@@ -70,12 +71,7 @@ BOOL CDcAgentApp::InitInstance()
 	g_dllLog->SetLogLevel((ELogLevel)nLogLevel);	
 
 	// Initialize Winsock
-	WSADATA wsaData;
-	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
-	{
-		LOG_ERROR(L"failed to initialize Winsock, error is %d", GetLastError());
-		return FALSE;
-	}
+	AfxSocketInit();
 
 	CDcAgentDlg dlg;
 	m_pMainWnd = &dlg;
@@ -96,10 +92,7 @@ BOOL CDcAgentApp::InitInstance()
 		TRACE(traceAppMsg, 0, "警告: 如果您在对话框上使用 MFC 控件，则无法 #define _AFX_NO_MFC_CONTROLS_IN_DIALOGS。\n");
 	}
 
-	CloseHandle(mutexHandle);
-
-	// Cleanup and shutdown Winsock
-	WSACleanup();
+	CloseHandle(mutexHandle);	
 
 	// 删除上面创建的 shell 管理器。
 	if (pShellManager != nullptr)

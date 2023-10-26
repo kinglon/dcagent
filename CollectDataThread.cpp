@@ -88,7 +88,7 @@ UINT_PTR CCollectDataThread::SetScheduleTimer(const CSchedulePolicy& schedulePol
 
 BOOL CCollectDataThread::InitInstance()
 {	
-    LOG_INFO(L"the thread of collecting data begins to run");
+    LOG_INFO(L"the thread of collecting data begins to run");    
 
     AfxSocketInit();
 
@@ -204,6 +204,14 @@ DWORD WINAPI RecvScriptOutputThreadProc(LPVOID lpParam)
     }
     CloseHandle(hReadPipe);
 
+    // 去除微软版权字样
+    int nIndex = output.find("保留所有权利。");
+    if (nIndex != -1)
+    {
+        output = output.substr(nIndex + strlen("保留所有权利。"));
+    }
+    output = CImCharset::AnsiToUTF8(output.c_str());
+    LOG_DEBUG(L"script output : %s", CImCharset::UTF8ToUnicode(output.c_str(), output.length()).c_str());
     CCollectDataThread::GetInstance()->RecvScriptOutput(strGroupName, output);
 
     return 0;

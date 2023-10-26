@@ -24,7 +24,7 @@ void CDumpUtil::SetDumpFilePath(const wchar_t* szDumpFilePath)
 
 long __stdcall CDumpUtil::UnhandledExceptionFilter(struct _EXCEPTION_POINTERS* pExceptionInfo)
 {
-    LOG_DEBUG(L"catch an unhandle exception");
+    LOG_ERROR(L"catch an unhandle exception, last error is %d", GetLastError());
 
     wstring strDumpFile = m_strDumpFilePath;
     time_t currentTime;
@@ -45,7 +45,7 @@ long __stdcall CDumpUtil::UnhandledExceptionFilter(struct _EXCEPTION_POINTERS* p
         strDumpFile += szFileName;
     }
 
-    LOG_DEBUG(L"dump file path = %s", strDumpFile.c_str());
+    LOG_ERROR(L"dump file path = %s", strDumpFile.c_str());
     HANDLE hFile = CreateFile(strDumpFile.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hFile == INVALID_HANDLE_VALUE)
     {
@@ -87,7 +87,7 @@ long __stdcall CDumpUtil::UnhandledExceptionFilter(struct _EXCEPTION_POINTERS* p
         LOG_ERROR(L"failed to get MiniDumpWriteDump function address");
     }
     
-    LOG_DEBUG(L"exit process because of exception");
+    LOG_ERROR(L"exit process because of exception");
     CloseHandle(hFile);
     FreeLibrary(hDbghelpDll);
     exit(1);
