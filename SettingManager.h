@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <json/json.h>
 #include "SchedulePolicy.h"
 
 class CSettingManager
@@ -32,6 +33,8 @@ public:
 
 private:
 	void LoadBasicConfigure();
+
+	void SaveBasicConfigure(const Json::Value& root);
 
 	void LoadSchedulePolicyConfigure();
 

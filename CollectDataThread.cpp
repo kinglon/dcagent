@@ -230,7 +230,7 @@ std::wstring CCollectDataThread::GetScriptFilePath(const std::string& strScriptF
     }
 
     std::wstring strScriptFileUnicode = CImCharset::UTF8ToUnicode(strScriptFileName.c_str(), strScriptFileName.length());
-    std::wstring strScriptFilePath = strScriptPath + strScriptFileUnicode;
+    std::wstring strScriptFilePath = strScriptPath + strScriptFileUnicode + L".vbs";
     return strScriptFilePath;
 }
 

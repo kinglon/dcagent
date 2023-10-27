@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "SettingManager.h"
 #include <fstream>
-#include <json/json.h>
 #include <iphlpapi.h>
 #include <ws2tcpip.h>
 #include "Utility/ImPath.h"
@@ -59,13 +58,15 @@ void CSettingManager::LoadBasicConfigure()
         m_nLogLevel = root["log_level"].asInt();
     }
 
-    std::vector<std::string> localIPs;
-    if (root.isMember("local_ip") && root["local_ip"].isArray())
+    std::string strIPAddrDim;
+    if (root.isMember("ip_addr_dim"))
     {
-        for (const Json::Value& value : root["local_ip"]) 
-        {
-            localIPs.push_back(value.asString());
-        }
+        strIPAddrDim = root["ip_addr_dim"].asString();
+    }
+
+    if (root.isMember("local_ip"))
+    {
+        m_strLocalIPAddress = root["local_ip"].asString();
     }
 
     if (root.isMember("policy_receive_port"))
@@ -89,22 +90,46 @@ void CSettingManager::LoadBasicConfigure()
     }
 
     bool bFound = false;
+    bool bSame = true;
     std::vector<std::string> localNicIPs = GetLocalIPList();
     for (auto& ip : localNicIPs)
     {
-        for (auto& ip2 : localIPs)
+        if (ip.find(strIPAddrDim) == 0)
         {
-            if (ip == ip2)
-            {
-                m_strLocalIPAddress = ip;
-                bFound = true;
-                break;
-            }
+            bFound = true;
+            bSame = m_strLocalIPAddress == ip;
+            m_strLocalIPAddress = ip;            
+            break;
         }
     }
     if (!bFound)
     {
-        LOG_ERROR(L"the configured local ip is not existed");
+        LOG_ERROR(L"failed to find a local ip address.");
+    }
+    else
+    {
+        if (!bSame)
+        {
+            root["local_ip"] = m_strLocalIPAddress;
+            SaveBasicConfigure(root);
+        }
+    }
+}
+
+void CSettingManager::SaveBasicConfigure(const Json::Value& root)
+{
+    std::wstring strConfFilePath = CImPath::GetConfPath() + L"configs.json";
+    std::ofstream outputFile(strConfFilePath);
+    if (outputFile.is_open())
+    {
+        Json::StreamWriterBuilder writer;
+        std::string jsonString = Json::writeString(writer, root);
+        outputFile << jsonString;
+        outputFile.close();
+    }
+    else
+    {
+        LOG_ERROR(L"failed to open the basic configure file : %s", strConfFilePath.c_str());
     }
 }
 
@@ -151,7 +176,7 @@ void CSettingManager::LoadSchedulePolicyConfigure()
                 schedulePolicy.m_strGroupName = childValue["group_name"].asString();
                 schedulePolicy.m_strScriptName = childValue["script_name"].asString();
                 schedulePolicy.m_strCronTab = childValue["crontab"].asString();
-                schedulePolicy.m_bEnable = childValue["is_true"].asBool();
+                schedulePolicy.m_bEnable = childValue["is_true"].asString() == "true";
                 m_schedulePolicies.push_back(schedulePolicy);
             }
         }
@@ -167,7 +192,7 @@ void CSettingManager::SaveSchedulePolicyConfigure()
         childValue["group_name"] = item.m_strGroupName;
         childValue["script_name"] = item.m_strScriptName;
         childValue["crontab"] = item.m_strCronTab;
-        childValue["is_true"] = item.m_bEnable;
+        childValue["is_true"] = item.m_bEnable?"true":"false";
         root[item.m_strGroupName] = childValue;
     }
 
@@ -188,18 +213,16 @@ void CSettingManager::SaveSchedulePolicyConfigure()
 
 void CSettingManager::UpdateSchedulePolicies(const CSchedulePolicy& schedulePolicy)
 {
-    bool bExist = false;
-    for (auto& item : m_schedulePolicies)
+    for (auto it = m_schedulePolicies.begin(); it != m_schedulePolicies.end(); it++)
     {
-        if (item.m_strGroupName == schedulePolicy.m_strGroupName)
+        if (it->m_strGroupName == schedulePolicy.m_strGroupName)
         {
-            item = schedulePolicy;
-            bExist = true;
+            m_schedulePolicies.erase(it);
             break;
         }
     }
 
-    if (!bExist)
+    if (schedulePolicy.m_bEnable)
     {
         m_schedulePolicies.push_back(schedulePolicy);
     }
