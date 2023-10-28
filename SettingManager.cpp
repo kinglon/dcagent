@@ -174,7 +174,6 @@ void CSettingManager::LoadSchedulePolicyConfigure()
             {
                 CSchedulePolicy schedulePolicy;
                 schedulePolicy.m_strGroupName = childValue["group_name"].asString();
-                schedulePolicy.m_strScriptName = childValue["script_name"].asString();
                 schedulePolicy.m_strCronTab = childValue["crontab"].asString();
                 schedulePolicy.m_bEnable = childValue["is_true"].asString() == "true";
                 m_schedulePolicies.push_back(schedulePolicy);
@@ -190,7 +189,6 @@ void CSettingManager::SaveSchedulePolicyConfigure()
     {
         Json::Value childValue;
         childValue["group_name"] = item.m_strGroupName;
-        childValue["script_name"] = item.m_strScriptName;
         childValue["crontab"] = item.m_strCronTab;
         childValue["is_true"] = item.m_bEnable?"true":"false";
         root[item.m_strGroupName] = childValue;

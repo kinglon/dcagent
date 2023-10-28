@@ -7,8 +7,6 @@ class CSchedulePolicy
 public:
 	std::string m_strGroupName;
 
-	std::string m_strScriptName;
-
 	bool m_bEnable = false;
 
 	std::string m_strCronTab;

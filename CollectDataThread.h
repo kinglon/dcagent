@@ -28,7 +28,7 @@ private:
 
 	void OnTimer(UINT_PTR nTimerId);
 
-	void RunScript(std::string strGroupName, std::string strScriptFileName);
+	void RunScript(std::string strGroupName);
 
 	void OnScriptOutput(const std::string& strGroupName, const std::string& strOutput);
 

@@ -178,7 +178,7 @@ void CCollectDataThread::OnTimer(UINT_PTR nTimerId)
                 m_mapTimerId2GroupName[nTimerId] = schedulePolicy.m_strGroupName;
             }
 
-            RunScript(strGroupName, schedulePolicy.m_strScriptName);
+            RunScript(strGroupName);
 
             break;
         }
@@ -234,7 +234,7 @@ std::wstring CCollectDataThread::GetScriptFilePath(const std::string& strScriptF
     return strScriptFilePath;
 }
 
-void CCollectDataThread::RunScript(std::string strGroupName, std::string strScriptFileName)
+void CCollectDataThread::RunScript(std::string strGroupName)
 {
     auto it = m_mapGroupName2IsRun.find(strGroupName);
     if (it != m_mapGroupName2IsRun.end() && it->second)
@@ -243,6 +243,7 @@ void CCollectDataThread::RunScript(std::string strGroupName, std::string strScri
         return;
     }
     
+    std::string strScriptFileName = strGroupName;
     std::wstring strScriptPath = GetScriptFilePath(strScriptFileName);
     LOG_DEBUG(L"run script : %s", strScriptPath.c_str());
     DWORD attributes = GetFileAttributes(strScriptPath.c_str());
