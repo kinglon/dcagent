@@ -14,6 +14,8 @@ public:
 
 public:
 	int GetLogLevel() { return m_nLogLevel; }
+
+	int GetLogBufferSize() { return m_nLogBufferSize; }
 	
 	UINT GetPolicyRecvPort() { return m_nPolicyRecvPort; }
 
@@ -26,6 +28,10 @@ public:
 
 	// 性能数据接收的主机端口
 	UINT GetSendPort() { return m_nSendPort; }
+
+	int GetSendBufferSize() { return m_nSendBufferSize; }
+
+	int GetRecvBufferSize() { return m_nRecvBufferSize; }
 
 	const std::vector<CSchedulePolicy>& GetSchedulePolicies() { return m_schedulePolicies; }
 
@@ -45,6 +51,8 @@ private:
 private:
 	int m_nLogLevel = 2; // debug 1, info 2, error 3, ...
 
+	int m_nLogBufferSize = 4000;
+
 	UINT m_nPolicyRecvPort = 6081;
 
 	UINT m_nScriptRecvPort = 6082;
@@ -56,4 +64,8 @@ private:
 	UINT m_nSendPort = 7084;
 
 	std::vector<CSchedulePolicy> m_schedulePolicies;
+
+	int m_nSendBufferSize = 8000;
+
+	int m_nRecvBufferSize = 8000;
 };

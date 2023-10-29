@@ -30,12 +30,21 @@ BOOL CRecvDataThread::InitInstance()
         return FALSE;
     }
 
+    int recvBufferSize = CSettingManager::GetInstance()->GetRecvBufferSize();
+    LOG_INFO(L"set the buffer size of receiving to %d", recvBufferSize);
+    m_policySocket.SetSockOpt(SO_RCVBUF, &recvBufferSize, sizeof(recvBufferSize));
+    int realBufferSize = 0;
+    int realBufferSizeLen = sizeof(realBufferSize);
+    m_policySocket.GetSockOpt(SO_RCVBUF, &realBufferSize, &realBufferSizeLen);
+    LOG_INFO(L"the real buffer size of receiving is %d", realBufferSize);
+
     UINT nScriptPort = CSettingManager::GetInstance()->GetScriptRecvPort();
     if (!m_scriptSocket.Create(nScriptPort, SOCK_DGRAM))
     {
         LOG_ERROR(L"failed to create the script socket (%d), error is %d", nScriptPort, GetLastError());
         return FALSE;
     }
+    m_scriptSocket.SetSockOpt(SO_RCVBUF, &recvBufferSize, sizeof(recvBufferSize));
 
     return TRUE;
 }

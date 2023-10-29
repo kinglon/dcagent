@@ -9,7 +9,7 @@
 class LogBuffer
 {
 public:
-	LogBuffer();
+	LogBuffer(int bufferSize);
 	~LogBuffer();
 
 public:
@@ -23,7 +23,7 @@ public:
 	unsigned long GetLogLength();
 
 protected:
-    wchar_t m_szBuff[LOG_BUFFER_SIZE];
+    wchar_t* m_szBuff = nullptr;
     wchar_t*	m_pBuffWritten = nullptr;
-    const wchar_t*	m_pBuffEnd = nullptr;
+    const wchar_t*	m_pBuffEnd = nullptr;  // 最后一个字符，不能写
 };

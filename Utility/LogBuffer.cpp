@@ -20,15 +20,19 @@ const char PATH_SEPERATOR = L'\\';
 const char PATH_SEPERATOR = L'/';
 #endif
 
-LogBuffer::LogBuffer()
+#define LINE_BREAK_SIZE 3
+
+LogBuffer::LogBuffer(int bufferSize)
 {
-	ZeroMemory(m_szBuff, sizeof(m_szBuff));
+	m_szBuff = new wchar_t[bufferSize];
+	memset(m_szBuff, 0, bufferSize * sizeof(wchar_t));
 	m_pBuffWritten = m_szBuff;
-	m_pBuffEnd = m_pBuffWritten + ARRAYSIZE(m_szBuff) - 6;
+	m_pBuffEnd = m_pBuffWritten + bufferSize - 1; // 1 for \0
 }
 
 LogBuffer::~LogBuffer()
 {
+	delete[] m_szBuff;
 }
 
 void LogBuffer::LogFileName(const char* pFilePathName, unsigned int nLine)
@@ -42,7 +46,7 @@ void LogBuffer::LogFileName(const char* pFilePathName, unsigned int nLine)
 			pFileName = pFilePathName;
 		}
 
-        int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"[%S:%d] ", pFileName, nLine);
+        int nWtiteDone = _snwprintf_s(m_pBuffWritten, m_pBuffEnd - m_pBuffWritten, _TRUNCATE, L"[%S:%d] ", pFileName, nLine);
 		if (nWtiteDone > 0){
 			m_pBuffWritten += nWtiteDone;
 		}
@@ -63,7 +67,7 @@ void LogBuffer::LogTimeInfoAndLevel(ELogLevel logLevel)
 
 	SYSTEMTIME st;
 	GetLocalTime(&st);
-    int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"<<%02d-%02d-%02d %02d:%02d:%02d#%s>>", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, strLevel.c_str());
+    int nWtiteDone = _snwprintf_s(m_pBuffWritten, m_pBuffEnd - m_pBuffWritten, _TRUNCATE, L"<<%02d-%02d-%02d %02d:%02d:%02d#%s>>", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, strLevel.c_str());
 	if (nWtiteDone > 0)
     {
 		m_pBuffWritten += nWtiteDone;
@@ -73,42 +77,54 @@ void LogBuffer::LogTimeInfoAndLevel(ELogLevel logLevel)
 void LogBuffer::LogTID()
 {
 	DWORD dwTID = GetCurrentThreadId();
-    int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"[tid:%05d] ", dwTID);
-	if (nWtiteDone > 0){
+    int nWtiteDone = _snwprintf_s(m_pBuffWritten, m_pBuffEnd - m_pBuffWritten, _TRUNCATE, L"[tid:%05d] ", dwTID);
+	if (nWtiteDone > 0)
+	{
 		m_pBuffWritten += nWtiteDone;
 	}
 }
 
 void LogBuffer::LogString(const wchar_t* pString)
 {
-	if (pString == nullptr){
+	if (pString == nullptr)
+	{
 		return;
 	}
 
-    int nWtiteDone = _snwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), L"[%s] ", pString);
-	if (nWtiteDone > 0){
+	int bufCount = (m_pBuffEnd - m_pBuffWritten) - LINE_BREAK_SIZE;
+    int nWtiteDone = _snwprintf_s(m_pBuffWritten, bufCount, _TRUNCATE, L"[%s] ", pString);
+	if (nWtiteDone > 0)
+	{
 		m_pBuffWritten += nWtiteDone;
+	}
+	else if (nWtiteDone == -1)  //Ìî³äÂú
+	{
+		m_pBuffWritten += bufCount -1; // È¥µô\0
 	}
 }
 
 void LogBuffer::LogFormat(const wchar_t* fmt, va_list ap)
 {
-    int nWtiteDone = _vsnwprintf_s(m_pBuffWritten, (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), (m_pBuffEnd - m_pBuffWritten)/sizeof(wchar_t), fmt, ap);
-	if (nWtiteDone > 0){
+	int bufCount = (m_pBuffEnd - m_pBuffWritten) - LINE_BREAK_SIZE;
+    int nWtiteDone = _vsnwprintf_s(m_pBuffWritten, bufCount, _TRUNCATE, fmt, ap);
+	if (nWtiteDone > 0)
+	{
 		m_pBuffWritten += nWtiteDone;
 	}
     else if (nWtiteDone == -1)  //Ìî³äÂú
     {
-        m_pBuffWritten += m_pBuffEnd - m_pBuffWritten;
+        m_pBuffWritten += bufCount - 1; // È¥µô\0
     }    
 }
 
 void LogBuffer::AppendLineBreak()
 {
-	if (m_pBuffEnd > m_pBuffWritten)
+	if (m_pBuffEnd - m_pBuffWritten >= LINE_BREAK_SIZE)
     {
-        *(m_pBuffWritten++) = L'\n';
-        *(m_pBuffWritten++) = L'\0';
+		m_pBuffWritten[0] = L'\r';
+		m_pBuffWritten[1] = L'\n';
+		m_pBuffWritten[2] = L'\0';
+		m_pBuffWritten += LINE_BREAK_SIZE;
 	}
 }
 

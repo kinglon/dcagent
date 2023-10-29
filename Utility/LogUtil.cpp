@@ -46,6 +46,14 @@ void CLogUtil::SetLogLevel(ELogLevel nLogLevel)
     m_logLevel = nLogLevel;
 }
 
+void CLogUtil::SetLogBufferSize(int bufferSize) 
+{ 
+    LOG_INFO(L"set the buffer size of log to %d", bufferSize);
+
+    CIcrCriticalSection cs(m_csLog.GetCS());
+    m_logBufferSize = bufferSize; 
+}
+
 void CLogUtil::Log(const char* pFileName, unsigned int nLine, ELogLevel nLogLevel, const wchar_t* szFormat, ...)
 {    
     if (m_fpFile == nullptr)
@@ -58,7 +66,7 @@ void CLogUtil::Log(const char* pFileName, unsigned int nLine, ELogLevel nLogLeve
         return;
     }
 
-    LogBuffer logBuff;
+    LogBuffer logBuff(m_logBufferSize);
     logBuff.LogTimeInfoAndLevel(nLogLevel);
     logBuff.LogTID();
     if (pFileName != nullptr)

@@ -58,6 +58,21 @@ void CSettingManager::LoadBasicConfigure()
         m_nLogLevel = root["log_level"].asInt();
     }
 
+    if (root.isMember("log_buffer_size"))
+    {
+        m_nLogBufferSize = root["log_buffer_size"].asInt();
+    }
+
+    if (root.isMember("buffer_size_send"))
+    {
+        m_nSendBufferSize = root["buffer_size_send"].asInt();
+    }
+
+    if (root.isMember("buffer_size_receive"))
+    {
+        m_nRecvBufferSize = root["buffer_size_receive"].asInt();
+    }
+
     std::string strIPAddrDim;
     if (root.isMember("ip_addr_dim"))
     {
@@ -169,8 +184,7 @@ void CSettingManager::LoadSchedulePolicyConfigure()
         for (const auto& key : root.getMemberNames())
         {
             const Json::Value& childValue = root[key];
-            if (childValue.isMember("group_name") && childValue.isMember("script_name") &&
-                childValue.isMember("is_true") && childValue.isMember("crontab"))
+            if (childValue.isMember("group_name") && childValue.isMember("is_true") && childValue.isMember("crontab"))
             {
                 CSchedulePolicy schedulePolicy;
                 schedulePolicy.m_strGroupName = childValue["group_name"].asString();

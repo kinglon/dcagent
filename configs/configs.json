@@ -1,9 +1,12 @@
 {
+    "buffer_size_send" : 8192,
+    "buffer_size_receive" : 8192,
 	"data_server_ip" : "127.0.0.1",
 	"data_server_port" : 7084,
 	"ip_addr_dim" : "127.0.0",
 	"local_ip" : "127.0.0.1",
 	"log_level" : 2,
+    "log_buffer_size" : 4096,
 	"policy_receive_port" : 7081,
 	"script_receive_port" : 7082
 }

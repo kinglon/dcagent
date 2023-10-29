@@ -97,6 +97,13 @@ BOOL CCollectDataThread::InitInstance()
         LOG_ERROR(L"failed to create the sending socket, error is %d", m_perfSendSock.GetLastError());
         return FALSE;
     }
+    int sendBufferSize = CSettingManager::GetInstance()->GetSendBufferSize();
+    LOG_INFO(L"set the buffer size of sending to %d", sendBufferSize);
+    m_perfSendSock.SetSockOpt(SO_SNDBUF, &sendBufferSize, sizeof(sendBufferSize));
+    int realBufferSize = 0;
+    int realBufferSizeLen = sizeof(realBufferSize);
+    m_perfSendSock.GetSockOpt(SO_SNDBUF, &realBufferSize, &realBufferSizeLen);
+    LOG_INFO(L"the real buffer size of sending is %d", realBufferSize);
 
     const std::vector<CSchedulePolicy>& schedulePolicies = CSettingManager::GetInstance()->GetSchedulePolicies();
     for (const auto& schedulePolicy : schedulePolicies)
@@ -119,6 +126,10 @@ void CCollectDataThread::SendData(const std::string& strData)
     if (m_perfSendSock.SendTo(strData.c_str(), strData.length(), nPort, strIPUnicode.c_str()) == SOCKET_ERROR)
     {
         LOG_ERROR(L"failed to send the performance data, error is %d", GetLastError());
+    }
+    else
+    {
+        LOG_DEBUG(L"the performance data is %s", CImCharset::UTF8ToUnicode(strData.c_str(), strData.length()).c_str());
     }
 }
 

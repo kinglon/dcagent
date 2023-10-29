@@ -69,6 +69,7 @@ BOOL CDcAgentApp::InitInstance()
 
 	int nLogLevel = CSettingManager::GetInstance()->GetLogLevel();
 	g_dllLog->SetLogLevel((ELogLevel)nLogLevel);	
+	g_dllLog->SetLogBufferSize(CSettingManager::GetInstance()->GetLogBufferSize());
 
 	// Initialize Winsock
 	AfxSocketInit();

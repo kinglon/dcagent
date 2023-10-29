@@ -34,6 +34,11 @@ public:
     void SetLogLevel(ELogLevel nLogLevel);
 
     /**
+    @name 设置单条日志长度
+    */
+    void SetLogBufferSize(int bufferSize);
+
+    /**
     @name 记录日志
     */
     void Log(const char* pFileName, unsigned int nLine, ELogLevel nLogLevel, const wchar_t* szFormat, ...);
@@ -48,4 +53,5 @@ private:
     ELogLevel m_logLevel = ELogLevel::LOG_LEVEL_DEBUG;
     CCSWrap m_csLog;  //多线程控制日志打印
     FILE* m_fpFile = nullptr;
+    int m_logBufferSize = 5000;
 };
