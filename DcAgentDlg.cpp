@@ -15,8 +15,7 @@
 #define new DEBUG_NEW
 #endif
 
-
-// 用于应用程序“关于”菜单项的 CAboutDlg 对话框
+#define WM_MY_HIDEWINDOW  (WM_USER+100)
 
 class CAboutDlg : public CDialogEx
 {
@@ -100,7 +99,7 @@ BOOL CDcAgentDlg::OnInitDialog()
 	// 设置此对话框的图标。  当应用程序主窗口不是对话框时，框架将自动
 	//  执行此操作
 	SetIcon(m_hIcon, TRUE);			// 设置大图标
-	SetIcon(m_hIcon, FALSE);		// 设置小图标
+	SetIcon(m_hIcon, FALSE);		// 设置小图标	
 
 	SetAutoRun();
 
@@ -113,6 +112,8 @@ BOOL CDcAgentDlg::OnInitDialog()
 	CCollectDataThread* collectDataThread = new CCollectDataThread();
 	collectDataThread->m_bAutoDelete = true;
 	collectDataThread->CreateThread();
+
+	PostMessage(WM_MY_HIDEWINDOW, 0, 0);
 
 	return TRUE;  // 除非将焦点设置到控件，否则返回 TRUE
 }
@@ -216,3 +217,15 @@ HCURSOR CDcAgentDlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+
+
+BOOL CDcAgentDlg::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_MY_HIDEWINDOW)
+	{
+		ShowWindow(SW_HIDE);
+		return TRUE;
+	}
+
+	return CDialogEx::PreTranslateMessage(pMsg);
+}
