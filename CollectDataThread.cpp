@@ -228,6 +228,11 @@ DWORD WINAPI RecvScriptOutputThreadProc(LPVOID lpParam)
     {
         output = output.substr(nIndex);
     }
+    nIndex = output.find_last_not_of("\r\n");
+    if (nIndex != -1)
+    {
+        output = output.substr(0, nIndex + 1);
+    }
 
     output = CImCharset::AnsiToUTF8(output.c_str());
     LOG_DEBUG(L"script output : %s", CImCharset::UTF8ToUnicode(output.c_str(), output.length()).c_str());
