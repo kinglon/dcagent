@@ -221,6 +221,14 @@ DWORD WINAPI RecvScriptOutputThreadProc(LPVOID lpParam)
     {
         output = output.substr(nIndex + strlen("保留所有权利。"));
     }
+
+    // 去除\r\n
+    nIndex = output.find_first_not_of("\r\n");
+    if (nIndex != -1)
+    {
+        output = output.substr(nIndex);
+    }
+
     output = CImCharset::AnsiToUTF8(output.c_str());
     LOG_DEBUG(L"script output : %s", CImCharset::UTF8ToUnicode(output.c_str(), output.length()).c_str());
     CCollectDataThread::GetInstance()->RecvScriptOutput(strGroupName, output);
